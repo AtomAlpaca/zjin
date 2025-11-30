@@ -17,14 +17,14 @@
 /// TODO: Implement all 39 types.
 
 ///|
-struct Inst_2R {
+struct Inst_DJ {
   opcode : Int
   rj : Int
   rd : Int
 } derive(Show)
 
 ///|
-struct Inst_3R {
+struct Inst_DJK {
   opcode : Int
   rk : Int
   rj : Int
@@ -32,7 +32,7 @@ struct Inst_3R {
 } derive(Show)
 
 ///|
-struct Inst_4R {
+struct Inst_FdFjFkFa {
   opcode : Int
   ra : Int
   rk : Int
@@ -41,7 +41,7 @@ struct Inst_4R {
 } derive(Show)
 
 ///|
-struct Inst_2RI8 {
+struct Inst_DJUk8 {
   opcode : Int
   i8 : Int
   rj : Int
@@ -49,7 +49,7 @@ struct Inst_2RI8 {
 } derive(Show)
 
 ///|
-struct Inst_2RI12 {
+struct Inst_DJSk12 {
   opcode : Int
   i12 : Int
   rj : Int
@@ -57,7 +57,7 @@ struct Inst_2RI12 {
 } derive(Show)
 
 ///|
-struct Inst_2RI14 {
+struct Inst_DJSk14 {
   opcode : Int
   i14 : Int
   rj : Int
@@ -65,7 +65,7 @@ struct Inst_2RI14 {
 } derive(Show)
 
 ///|
-struct Inst_2RI16 {
+struct Inst_DJSk16 {
   opcode : Int
   i16 : Int
   rj : Int
@@ -73,14 +73,14 @@ struct Inst_2RI16 {
 } derive(Show)
 
 ///|
-struct Inst_1RI21 {
+struct Inst_JSd5k16 {
   opcode : Int
   i21 : Int
   rj : Int
 } derive(Show)
 
 ///|
-struct Inst_I26 {
+struct Inst_Sd10k16 {
   opcode : Int
   i26 : Int
 } derive(Show)
@@ -106,107 +106,107 @@ const UInt_Max : UInt = 0xffffffffU
 ///
 /// ```moonbit
 /// // Extract bits 4-7 from 0x12345678
-/// let result = get_bit_seg(0x12345678U, 4, 7)
+/// let result = get_bit_seg(0x12345678, 4, 7)
 /// // Binary: 0x12345678 = ...0111 1000
 /// // Bits 4-7: 0111 (binary) = 7 (decimal)
 /// inspect(result, content="7")
 /// ```
 ///
-pub fn get_bit_seg(num : UInt, begin : Int, end : Int) -> UInt {
-  if end == 31 {
+pub fn get_bit_seg(num : UInt64, begin : Int, end : Int) -> UInt64 {
+  if end == 63 {
     return num >> begin
   }
-  let mask1 = (1U << (end + 1)) - 1
-  let mask2 = (1U << begin) - 1
-  let mask = mask1 - mask2
+  let mask1 : UInt64 = (1 << (end + 1)) - 1
+  let mask2 : UInt64 = (1 << begin) - 1
+  let mask : UInt64 = mask1 - mask2
   return (num & mask) >> begin
 }
 
 ///|
-pub fn parse_2R(inst : UInt) -> Inst_2R {
+pub fn decode_DJ(inst : UInt) -> Inst_DJ {
   {
-    opcode: get_bit_seg(inst, 10, 31).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 10, 31).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_3R(inst : UInt) -> Inst_3R {
+pub fn decode_DJK(inst : UInt) -> Inst_DJK {
   {
-    opcode: get_bit_seg(inst, 15, 31).reinterpret_as_int(),
-    rk: get_bit_seg(inst, 10, 14).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 15, 31).to_int(),
+    rk: get_bit_seg(inst.to_uint64(), 10, 14).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_4R(inst : UInt) -> Inst_4R {
+pub fn decode_FdFjFkFa(inst : UInt) -> Inst_FdFjFkFa {
   {
-    opcode: get_bit_seg(inst, 20, 31).reinterpret_as_int(),
-    ra: get_bit_seg(inst, 15, 19).reinterpret_as_int(),
-    rk: get_bit_seg(inst, 10, 14).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 20, 31).to_int(),
+    ra: get_bit_seg(inst.to_uint64(), 15, 19).to_int(),
+    rk: get_bit_seg(inst.to_uint64(), 10, 14).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_2RI8(inst : UInt) -> Inst_2RI8 {
+pub fn decode_DJUk8(inst : UInt) -> Inst_DJUk8 {
   {
-    opcode: get_bit_seg(inst, 18, 31).reinterpret_as_int(),
-    i8: get_bit_seg(inst, 10, 17).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 18, 31).to_int(),
+    i8: get_bit_seg(inst.to_uint64(), 10, 17).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_2RI12(inst : UInt) -> Inst_2RI12 {
+pub fn decode_DJSk12(inst : UInt) -> Inst_DJSk12 {
   {
-    opcode: get_bit_seg(inst, 22, 31).reinterpret_as_int(),
-    i12: get_bit_seg(inst, 10, 21).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 22, 31).to_int(),
+    i12: get_bit_seg(inst.to_uint64(), 10, 21).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_2RI14(inst : UInt) -> Inst_2RI14 {
+pub fn decode_DJSk14(inst : UInt) -> Inst_DJSk14 {
   {
-    opcode: get_bit_seg(inst, 24, 31).reinterpret_as_int(),
-    i14: get_bit_seg(inst, 10, 23).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 24, 31).to_int(),
+    i14: get_bit_seg(inst.to_uint64(), 10, 23).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_2RI16(inst : UInt) -> Inst_2RI16 {
+pub fn decode_DJSk16(inst : UInt) -> Inst_DJSk16 {
   {
-    opcode: get_bit_seg(inst, 26, 31).reinterpret_as_int(),
-    i16: get_bit_seg(inst, 10, 25).reinterpret_as_int(),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
-    rd: get_bit_seg(inst, 0, 4).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 26, 31).to_int(),
+    i16: get_bit_seg(inst.to_uint64(), 10, 25).to_int(),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
+    rd: get_bit_seg(inst.to_uint64(), 0, 4).to_int(),
   }
 }
 
 ///|
-pub fn parse_1RI21(inst : UInt) -> Inst_1RI21 {
+pub fn decode_JSd5k16(inst : UInt) -> Inst_JSd5k16 {
   {
-    opcode: get_bit_seg(inst, 26, 31).reinterpret_as_int(),
-    i21: get_bit_seg(inst, 10, 25).reinterpret_as_int() |
-    (get_bit_seg(inst, 0, 4).reinterpret_as_int() << 16),
-    rj: get_bit_seg(inst, 5, 9).reinterpret_as_int(),
+    opcode: get_bit_seg(inst.to_uint64(), 26, 31).to_int(),
+    i21: get_bit_seg(inst.to_uint64(), 10, 25).to_int() |
+    (get_bit_seg(inst.to_uint64(), 0, 4).to_int() << 16),
+    rj: get_bit_seg(inst.to_uint64(), 5, 9).to_int(),
   }
 }
 
 ///|
-pub fn parse_I26(inst : UInt) -> Inst_I26 {
+pub fn decode_Sd10k16(inst : UInt) -> Inst_Sd10k16 {
   {
-    opcode: get_bit_seg(inst, 26, 31).reinterpret_as_int(),
-    i26: get_bit_seg(inst, 10, 25).reinterpret_as_int() |
-    (get_bit_seg(inst, 0, 9).reinterpret_as_int() << 16),
+    opcode: get_bit_seg(inst.to_uint64(), 26, 31).to_int(),
+    i26: get_bit_seg(inst.to_uint64(), 10, 25).to_int() |
+    (get_bit_seg(inst.to_uint64(), 0, 9).to_int() << 16),
   }
 }
