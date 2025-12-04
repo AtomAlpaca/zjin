@@ -155,78 +155,78 @@ suberror La32ExecError {
 pub fn CPU::rdtimel_w(self : CPU, ins : Inst_DJ) -> Unit raise {
   let id = self.get_counter_id()
   let count = get_bit_seg(self.get_stable_counter(), 0, 31)
-  self.set_reg(R(ins.rj.reinterpret_as_uint()), R(id.to_uint64()))
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(count))
+  self.set_reg(R(ins.j.reinterpret_as_uint()), R(id.to_uint64()))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(count))
 }
 
 ///|
 pub fn CPU::rdtimeh_w(self : CPU, ins : Inst_DJ) -> Unit raise {
   let id = self.get_counter_id()
   let count = get_bit_seg(self.get_stable_counter(), 32, 63)
-  self.set_reg(R(ins.rj.reinterpret_as_uint()), R(id.to_uint64()))
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(count))
+  self.set_reg(R(ins.j.reinterpret_as_uint()), R(id.to_uint64()))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(count))
 }
 
 ///|
 ///  Read CPU config
 /// TODO: implement this
 pub fn CPU::cpucfg(self : CPU, ins : Inst_DJ) -> Unit raise {
-  self.set_reg(R(ins.rj.reinterpret_as_uint()), R(0))
+  self.set_reg(R(ins.j.reinterpret_as_uint()), R(0))
 }
 
 ///|
 /// 
 pub fn CPU::add_w(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x + y))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x + y))
 }
 
 ///|
 pub fn CPU::sub_w(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x - y))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x - y))
 }
 
 ///|
 pub fn CPU::slt(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
   if get_bit_seg(x, 0, 31).to_uint().reinterpret_as_int() <
     get_bit_seg(y, 0, 31).to_uint().reinterpret_as_int() {
-    self.set_reg(R(ins.rd.reinterpret_as_uint()), R(1))
+    self.set_reg(R(ins.d.reinterpret_as_uint()), R(1))
   } else {
-    self.set_reg(R(ins.rd.reinterpret_as_uint()), R(0))
+    self.set_reg(R(ins.d.reinterpret_as_uint()), R(0))
   }
 }
 
 ///|
 pub fn CPU::sltu(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
   if get_bit_seg(x, 0, 31) < get_bit_seg(y, 0, 31) {
-    self.set_reg(R(ins.rd.reinterpret_as_uint()), R(1))
-  } else {
-    self.set_reg(R(ins.rd.reinterpret_as_uint()), R(0))
+    self.set_reg(R(ins.d.reinterpret_as_uint()), R(1))
+  } else { 
+    self.set_reg(R(ins.d.reinterpret_as_uint()), R(0))
   }
 }
 
 ///|
 /// GR[rd] = (GR[rk]==0) ? 0 : GR[rj]
 pub fn CPU::maskeqz(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rk is R(x)
-  let rd : Reg = R(ins.rd.reinterpret_as_uint())
+  let rd : Reg = R(ins.d.reinterpret_as_uint())
   if x == 0 {
     self.set_reg(rd, R(0))
   } else {
@@ -237,10 +237,10 @@ pub fn CPU::maskeqz(self : CPU, ins : Inst_DJK) -> Unit raise {
 ///|
 /// GR[rd] = (GR[rk]!=0) ? 0 : GR[rj]
 pub fn CPU::masknez(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rk is R(x)
-  let rd : Reg = R(ins.rd.reinterpret_as_uint())
+  let rd : Reg = R(ins.d.reinterpret_as_uint())
   if x != 0 {
     self.set_reg(rd, R(0))
   } else {
@@ -251,96 +251,96 @@ pub fn CPU::masknez(self : CPU, ins : Inst_DJK) -> Unit raise {
 ///|
 /// GR[rd] = ~(GR[rj] | GR[rk])
 pub fn CPU::nor(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R((x | y).lnot()))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R((x | y).lnot()))
 }
 
 ///|
 /// GR[rd] = GR[rj] & GR[rk]
 pub fn CPU::and_(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x & y))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x & y))
 }
 
 ///|
 /// GR[rd] = GR[rj] | GR[rk]
 pub fn CPU::or(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x | y))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x | y))
 }
 
 ///|
 /// GR[rd] = GR[rj] ^ GR[rk]
 pub fn CPU::xor(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x ^ y))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x ^ y))
 }
 
 ///|
 /// GR[rd] = GR[rj] | (~GR[rk])
 pub fn CPU::orn(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x | y.lnot()))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x | y.lnot()))
 }
 
 ///|
 /// GR[rd] = GR[rj] & (~GR[rk])
 pub fn CPU::andn(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(x & y.lnot()))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(x & y.lnot()))
 }
 
 ///|
 /// tmp = SLL(GR[rj][31:0], GR[rk][4:0])
 /// GR[rd] = SignExtend(tmp[31:0], GRLEN)
 pub fn CPU::sll_w(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
   let tmp = (get_bit_seg(x, 0, 31) << get_bit_seg(y, 0, 4).to_int())
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
 }
 ///|
 /// tmp = SRL(GR[rj][31:0], GR[rk][4:0])
 /// GR[rd] = SignExtend(tmp[31:0], GRLEN)
 pub fn CPU::srl_w(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
   let tmp = (get_bit_seg(x, 0, 31) >> get_bit_seg(y, 0, 4).to_int())
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
 }
 
 ///|
 /// tmp = ROTR(GR[rj][31:0], GR[rk][4:0])
 /// GR[rd] = SignExtend(tmp[31:0], GRLEN)
 pub fn CPU::rotr_w(self : CPU, ins : Inst_DJK) -> Unit raise {
-  let rj = self.get_reg(R(ins.rj.reinterpret_as_uint()))
-  let rk = self.get_reg(R(ins.rk.reinterpret_as_uint()))
+  let rj = self.get_reg(R(ins.j.reinterpret_as_uint()))
+  let rk = self.get_reg(R(ins.k.reinterpret_as_uint()))
   guard rj is R(x)
   guard rk is R(y)
   let len = get_bit_seg(y, 0, 4)
   let tmp = (get_bit_seg(x, 0, 31) >> len.to_int()) |
                     ((get_bit_seg(x, 0, len.to_int() - 1)) << (31 - len.to_int() + 1))
-  self.set_reg(R(ins.rd.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
+  self.set_reg(R(ins.d.reinterpret_as_uint()), R(get_bit_seg(tmp, 0, 31)))
 }
