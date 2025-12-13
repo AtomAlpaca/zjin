@@ -161,6 +161,12 @@ pub fn CPU::set_counter_id(self : CPU, val : UInt) -> Unit {
 pub fn CPU::get_pc(self: CPU) -> UInt64 {
   self.pc
 }
+
+///|
+pub fn CPU::set_pc(self : CPU, val : UInt64) -> Unit {
+  self.pc = val
+}
+
 ///|
 pub fn CPU::load(
   self : CPU,
