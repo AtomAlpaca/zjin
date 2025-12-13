@@ -259,7 +259,18 @@ pub fn CPU::srl_w(self : CPU, ins : Inst_DJK) -> Unit raise {
   let tmp = (get_bit_seg(x, 0, 31) >> get_bit_seg(y, 0, 4).to_int())
   self.set_reg(R(ins.d), R(get_bit_seg(tmp, 0, 31)))
 }
-
+///|
+/// tmp = SRA(GR[rj][31:0], GR[rk][4:0])
+/// GR[rd] = SignExtend(tmp[31:0], GRLEN)
+pub fn CPU::sra_w(self : CPU, ins : Inst_DJK) -> Unit raise {
+  let rj = self.get_reg(R(ins.j))
+  let rk = self.get_reg(R(ins.k))
+  guard rj is R(x)
+  guard rk is R(y)
+  let tmp = (get_bit_seg(x, 0, 31).reinterpret_as_int64() >>
+                    get_bit_seg(y, 0, 4).to_int())
+  self.set_reg(R(ins.d), R(get_bit_seg(tmp.reinterpret_as_uint64(), 0, 31)))
+}
 ///|
 /// tmp = ROTR(GR[rj][31:0], GR[rk][4:0])
 /// GR[rd] = SignExtend(tmp[31:0], GRLEN)
@@ -351,10 +362,10 @@ pub fn CPU::slti(self : CPU, ins : Inst_DJSk12) -> Unit raise {
 ///|
 /// tmp = SignExtend(si12, GRLEN)
 /// GR[rd] = (unsigned(GR[rj]) < unsigned(tmp)) ? 1 : 0
-pub fn CPU::sltui(self : CPU, ins : Inst_DJUk12) -> Unit raise {
+pub fn CPU::sltui(self : CPU, ins : Inst_DJSk12) -> Unit raise {
   let rj = self.get_reg(R(ins.j))
   guard rj is R(x)
-  let y = ins.uk12
+  let y = ins.sk12
   let res = (if x < y.to_uint64() { 1 } else { 0 }).to_uint64()
   self.set_reg(R(ins.d), R(res))
 }
@@ -362,10 +373,10 @@ pub fn CPU::sltui(self : CPU, ins : Inst_DJUk12) -> Unit raise {
 ///|
 /// tmp = GR[rj][31:0] + SignExtend(si12, 32)
 /// GR[rd] = SignExtend(tmp[31:0], GRLEN)
-pub fn CPU::addi_w(self : CPU, ins : Inst_DJUk12) -> Unit raise {
+pub fn CPU::addi_w(self : CPU, ins : Inst_DJSk12) -> Unit raise {
   let rj = self.get_reg(R(ins.j))
   guard rj is R(x)
-  let y = signed_extend(ins.uk12.to_uint64(), 12, 32).to_uint().reinterpret_as_int()
+  let y = signed_extend(ins.sk12.to_uint64(), 12, 32).to_uint().reinterpret_as_int()
   let res = get_bit_seg(x, 0, 31).to_uint().reinterpret_as_int() + y
   self.set_reg(R(ins.d), R(get_bit_seg(res.to_int64().reinterpret_as_uint64(), 0, 31)))
 }
@@ -877,3 +888,4 @@ pub fn CPU::bleu(self : CPU, ins : Inst_DJSk16) -> Unit raise {
     self.set_pc(pc + offset)
   }
 }
+
