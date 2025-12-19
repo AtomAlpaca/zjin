@@ -70,6 +70,7 @@ test "test DJSk12 decode" {
   inspect(decode_DJSk12(inst), content="{opcode: 687, sk12: 891, j: 24, d: 18}")
 }
 
+///|
 test "test p DJSk14 decode" {
   let inst = 0xdeadbeefU
   // inst   = 0b11011110101011011011111011101111
@@ -77,9 +78,13 @@ test "test p DJSk14 decode" {
   // 11119  =         0b10101101101111
   // 23     =                       0b10111
   // 15     =                            0b01111
-  inspect(decode_DJSk14(inst), content="{opcode: 222, sk14: 11119, j: 23, d: 15}")
+  inspect(
+    decode_DJSk14(inst),
+    content="{opcode: 222, sk14: 11119, j: 23, d: 15}",
+  )
 }
 
+///|
 test "test DJSk16 decode" {
   let inst = 0xfeebdaedU
   // inst  = 0b11111110111010111101101011101101
@@ -87,7 +92,10 @@ test "test DJSk16 decode" {
   // 47862 =       0b1011101011110110
   // 23                            0b10111
   // 13    =                            0b01101
-  inspect(decode_DJSk16(inst), content="{opcode: 63, sk16: 47862, j: 23, d: 13}")
+  inspect(
+    decode_DJSk16(inst),
+    content="{opcode: 63, sk16: 47862, j: 23, d: 13}",
+  )
 }
 
 ///|
@@ -110,4 +118,3 @@ test "test Sd10k16 decode" {
   // 39175240[16:25] =                       0b1001010101
   inspect(decode_Sd10k16(inst), content="{opcode: 60, sd10k16: 39175240}")
 }
-

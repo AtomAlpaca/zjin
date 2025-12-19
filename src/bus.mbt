@@ -1,12 +1,13 @@
+///|
 /// Bus
 /// Connect with some IO devices
-
 struct Bus {
   ram : Ram
 }
 
-pub fn Bus::make_bus() -> Bus{
-  { ram : Ram::make_ram() }
+///|
+pub fn Bus::make_bus() -> Bus {
+  { ram: Ram::make_ram() }
 }
 
 ///|
@@ -64,4 +65,13 @@ pub fn Bus::store(
   size? : UInt = 1,
 ) -> Unit raise MemoryAccessError {
   self.ram.store(address, value, size~)
+}
+
+///|
+pub fn Bus::store_bytes(
+  self : Bus,
+  address : UInt,
+  bytes : Bytes,
+) -> Unit raise MemoryAccessError {
+  self.ram.store_bytes(address, bytes)
 }

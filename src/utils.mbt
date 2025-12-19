@@ -1,7 +1,10 @@
+///|
 const ALL_ONE_MASK : UInt64 = 0xFFFFFFFFFFFFFFFFUL
 
+///|
 typealias UInt64 as BitContainer
 
+///|
 suberror ExtendError {
   BitsSizeTooLarge(String, UInt)
 }
@@ -55,7 +58,7 @@ pub fn signed_extend(
     v = v | high_mask
   }
   let out_mask = ALL_ONE_MASK >> (64 - output_bits.reinterpret_as_int())
-  (v & out_mask)
+  v & out_mask
 }
 
 ///|
@@ -72,16 +75,35 @@ pub fn zero_extend(
     raise BitsSizeTooLarge("Output bits size too large", output_bits)
   }
   let mask = ALL_ONE_MASK >> (64 - output_bits.reinterpret_as_int())
-  (value & mask)
+  value & mask
 }
 
+///|
 const OPCODE_MASK_DJ : UInt = 0xfffffc00
+
+///|
 const OPCODE_MASK_DJK : UInt = 0xffff8000
+
+///|
 const OPCODE_MASK_Ud15 : UInt = 0xffff8000
+
+///|
 const OPCODE_MASK_DJUk5 : UInt = 0xffff8000
+
+///|
 const OPCODE_MASK_DJSk12 : UInt = 0xffc00000
+
+///|
 const OPCODE_MASK_DJUk12 : UInt = 0xffc00000
+
+///|
 const OPCODE_MASK_DSj20 : UInt = 0xfe000000
+
+///|
 const OPCODE_MASK_JSd5k16 : UInt = 0xfc000000
+
+///|
 const OPCODE_MASK_DJSk16 : UInt = 0xfc000000
+
+///|
 const OPCODE_MASK_Sd10k16 : UInt = 0xfc000000

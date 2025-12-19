@@ -1,8 +1,10 @@
 // 64 MB
+
+///|
 const Default_Ram_Size : Int = 1024 * 1024 * 64
 
-
-///| The errors that may occur during memory access operations.
+///|
+/// The errors that may occur during memory access operations.
 /// LoadAddressTooLarge(Error message, Address)
 /// StoreAddressTooLarge(Error message, Address)
 /// LoadIllegalSize(Error message, Size)
@@ -14,12 +16,14 @@ pub suberror MemoryAccessError {
   StoreIllegalSize(String, UInt)
 }
 
+///|
 struct Ram {
   ram : FixedArray[Byte]
 }
 
+///|
 pub fn Ram::make_ram(ram_size? : Int = Default_Ram_Size) -> Ram {
-  { ram : FixedArray::make(ram_size, 0) }
+  { ram: FixedArray::make(ram_size, 0) }
 }
 
 ///|
@@ -62,8 +66,8 @@ pub fn Ram::load(
   }
   // address + size may overflow when address is very large (0xffffffff for example)
   // And the index is less than signed int max value 0x7fffffff
-  if address + size >= self.ram.length().reinterpret_as_uint() || 
-  address >= 0x7fffffffU {
+  if address + size >= self.ram.length().reinterpret_as_uint() ||
+    address >= 0x7fffffffU {
     raise LoadAddressIllegal(
       "The provided address \{address} is too large, the max address is \{self.ram.length() - 1}",
       address,
@@ -71,7 +75,8 @@ pub fn Ram::load(
   }
   let mut res : UInt64 = 0
   for i = 0; i < size.reinterpret_as_int(); i = i + 1 {
-    res = res | (self.ram[address.reinterpret_as_int() + i].to_uint64() << (i * 8))
+    res = res |
+      (self.ram[address.reinterpret_as_int() + i].to_uint64() << (i * 8))
   }
   res
 }
@@ -125,5 +130,38 @@ pub fn Ram::store(
   }
   for i = size.reinterpret_as_int() - 1; i >= 0; i = i - 1 {
     self.ram[address.reinterpret_as_int() + i] = ((value >> (8 * i)) & 0xff).to_byte()
+  }
+}
+
+///|
+/// Stores a sequence of bytes into RAM starting at the specified address.
+///
+/// Parameters:
+///
+/// * `ram` : The RAM instance where bytes will be stored.
+/// * `start_address` : The starting memory address where the first byte will be
+///   stored.
+/// * `byte_sequence` : The sequence of bytes to store in memory.
+///
+/// Throws an error of type `MemoryAccessError` if any byte in the sequence
+/// would be stored at an address that exceeds RAM bounds, as determined by the
+/// `store` method called for each individual byte.
+///
+/// Example:
+/// ```moonbit
+/// let ram = Ram::make_ram()
+/// let bytes = "Hello".to_bytes()
+/// ram.store_bytes(0x1000U, bytes)
+/// // Verify the first byte was stored correctly
+/// inspect(ram.load(0x1000U, size=1), content="72") // 'H' = 72 in ASCII
+/// ```
+///
+pub fn Ram::store_bytes(
+  self : Ram,
+  address : UInt,
+  bytes : Bytes,
+) -> Unit raise MemoryAccessError {
+  for i, x in bytes {
+    self.store(address + i.reinterpret_as_uint(), x.to_uint64(), size=1)
   }
 }

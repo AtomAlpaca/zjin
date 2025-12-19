@@ -8,15 +8,18 @@ struct CPU {
   cpu_cfg : FixedArray[UInt]
 }
 
+///|
 suberror RegAccessError {
   UnknownReg(String, Reg)
   UnmatchedType(String, Reg, Reg_Value)
 }
 
+///|
 pub(all) enum Reg {
   R(UInt)
 }
 
+///|
 pub(all) enum Reg_Value {
   R(UInt64)
 }
@@ -63,6 +66,7 @@ pub fn CPU::get_reg(self : CPU, reg : Reg) -> Reg_Value raise RegAccessError {
     }
   }
 }
+
 ///|
 /// Sets the value of a specified register in the CPU.
 ///
@@ -89,7 +93,11 @@ pub fn CPU::get_reg(self : CPU, reg : Reg) -> Reg_Value raise RegAccessError {
 /// let cpu = CPU::make_CPU()
 /// cpu.set_reg(R(1), R(0x12))
 /// ```
-pub fn CPU::set_reg(self : CPU, reg : Reg, val : Reg_Value) -> Unit raise RegAccessError {
+pub fn CPU::set_reg(
+  self : CPU,
+  reg : Reg,
+  val : Reg_Value,
+) -> Unit raise RegAccessError {
   match (reg, val) {
     (R(x), R(v)) => {
       if x > 31 {
@@ -102,7 +110,10 @@ pub fn CPU::set_reg(self : CPU, reg : Reg, val : Reg_Value) -> Unit raise RegAcc
         self.r_regs[x.reinterpret_as_int()] = v
       }
     }
-    _ => { raise UnmatchedType("The register type and the value type are unmatched", reg, val) }
+    _ =>
+      raise UnmatchedType(
+        "The register type and the value type are unmatched", reg, val,
+      )
   }
 }
 
@@ -128,8 +139,8 @@ pub fn CPU::make_CPU() -> CPU {
     pc: 0,
     bus: Bus::make_bus(),
     stable_counter: 0,
-    counter_id : 0,
-    cpu_cfg : FixedArray::make(14, 0)
+    counter_id: 0,
+    cpu_cfg: FixedArray::make(14, 0),
   }
 }
 
@@ -158,7 +169,7 @@ pub fn CPU::set_counter_id(self : CPU, val : UInt) -> Unit {
 }
 
 ///|
-pub fn CPU::get_pc(self: CPU) -> UInt64 {
+pub fn CPU::get_pc(self : CPU) -> UInt64 {
   self.pc
 }
 
@@ -187,12 +198,46 @@ pub fn CPU::store(
 }
 
 ///|
+pub fn CPU::store_bytes(
+  self : CPU,
+  address : UInt,
+  bytes : Bytes,
+) -> Unit raise MemoryAccessError {
+  self.bus.store_bytes(address, bytes)
+}
+
+///|
 pub fn CPU::fetch(self : CPU) -> UInt raise MemoryAccessError {
   let inst = self.load(self.pc.to_uint(), size=4)
   self.pc = self.pc + 4
   inst.to_uint()
 }
 
-pub fn CPU::execute() -> Unit {
+///|
+suberror ExecuteError {
+  IllegalInstruction(String, UInt)
+}
 
+///|
+pub fn CPU::execute(self : CPU) -> Unit raise {
+  while true {
+    let inst = self.load(self.pc.to_uint(), size=4).to_uint()
+    if inst == 0 {
+      break
+    }
+    if self.execute_inst(inst) is Some(pc) {
+      self.set_pc(pc)
+    } else {
+      raise IllegalInstruction("Illegal Instruction \{inst}", inst)
+    }
+  }
+}
+
+///|
+pub fn CPU::execute_inst(self : CPU, inst : UInt) -> UInt64? raise {
+  if self.la32_base_exec(inst) is Some((_, pc)) {
+    return Some(pc)
+  } else {
+    return None
+  }
 }

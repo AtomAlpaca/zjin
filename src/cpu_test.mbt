@@ -11,9 +11,10 @@ test "test cpu load and store" {
   assert_eq(cpu.load(0x4000U, size=1), 0x7f)
 }
 
+///|
 test "test cpu fetch" {
   let cpu = CPU::make_CPU()
-  cpu.store(0x00, 0x1234567890abcdef, size = 8)
+  cpu.store(0x00, 0x1234567890abcdef, size=8)
   assert_eq(cpu.fetch(), 0x90abcdef)
   assert_eq(cpu.get_pc(), 4)
   assert_eq(cpu.fetch(), 0x12345678)
