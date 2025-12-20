@@ -1,5 +1,5 @@
 TARGET_TRIPLE = loongarch64-unknown-linux-gnu
-CLANG_FLAGS = -Wl,-Ttext=0x0,--nmagic,-no-pie -nostdlib
+CLANG_FLAGS = -Wl,-Ttext=0x0,--nmagic,-no-pie -nostdlib -fpic
 OBJCOPY_FLAGS = -O binary
 
 SRC_DIR = src
@@ -23,13 +23,13 @@ all: $(BINS)
 	@echo "All finished"
 
 $(BIN_DIR)/%.bin: $(SRC_DIR)/%.s
-	@mkdir -p $(BIN_DIR)
+	mkdir -p $(BIN_DIR)
 	@echo "Processing $<"
-	@clang --target=$(TARGET_TRIPLE) $(CLANG_FLAGS) $< -o $(basename $@)
-	@llvm-objcopy $(OBJCOPY_FLAGS) $(basename $@) $@
-	@rm -f $(basename $@)
+	clang --target=$(TARGET_TRIPLE) $(CLANG_FLAGS) $< -o $(basename $@)
+	llvm-objcopy $(OBJCOPY_FLAGS) $(basename $@) $@
+	rm -f $(basename $@)
 	@echo "Done"
 
 clean:
 	@echo "Clean the bin dir"
-	@rm -r $(BIN_DIR)
+	rm -r $(BIN_DIR)

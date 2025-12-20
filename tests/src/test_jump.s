@@ -1,116 +1,162 @@
-# Test jump instruction: jirl
-# 测试跳转指令
+# Test jump instructions for LoongArch
+# 测试龙芯架构跳转指令
+#
+# Instructions tested:
+# 1. jirl - Jump and Link Register
+# 2. bl - Branch and Link (pseudo-instruction using jirl)
+# 3. b - Branch (pseudo-instruction using jirl)
+#
+# jirl format: jirl rd, rj, offset
+#   rd = PC + 4 (return address)
+#   PC = rj + offset
+#
+# bl format: bl target
+#   $r1 = PC + 4
+#   PC = target
+#
+# b format: b target
+#   PC = target (no link)
 
 .text
 .globl _start
 
 _start:
-    # Set up base address for storing results
-    lu12i.w $r20, 13           # $r20 = 0xD000
-
-    # Test result register
-    addi.w  $r10, $r0, 0       # $r10 = test result accumulator
-
-    # ==========================================
-    # Test jirl basic functionality
-    # jirl rd, rj, offset: rd = PC + 4, PC = rj + offset
-    # ==========================================
+    # Initialize base address for result storage
+    lu12i.w $r20, 13           # $r20 = 0xD000 (base address)
     
+    # Initialize test result accumulator
+    addi.w  $r10, $r0, 0       # $r10 = test result accumulator (starts at 0)
+    
+    # ==========================================
+    # Test 1: Basic bl instruction (function call)
+    # ==========================================
+test_bl_basic:
     addi.w  $r10, $r10, 1      # $r10 = 1
+    bl      func_bl_basic
+    # After return $r10 should be 3
+    addi.w  $r10, $r10, 1      # $r10 = 4
+    st.w    $r10, $r20, 0
 
-    # Test 1: Simple function call using bl (which uses jirl internally)
-    # bl sets $r1 = PC + 4, PC = target
-    bl      func1
-    # After return, $r10 should be 3
-    addi.w  $r10, $r10, 1      # $r10 = 4 (returned from func1)
-
-    # Test 2: Manual jirl call - call func2
-    # Get address of func2 using pcaddu12i
-    pcaddu12i $r2, 0           # $r2 = PC (approximately)
-    addi.w  $r2, $r2, 32       # Adjust to point to func2 (estimate)
-    # Actually, let's use a simpler approach with labels
-    
-    # Test 3: Use jirl with offset to skip instructions
+    # ==========================================
+    # Test 2: Nested function calls
+    # ==========================================
+test_nested_calls:
     addi.w  $r10, $r10, 1      # $r10 = 5
-    
-    # Create return address manually
-    pcaddu12i $r3, 0           # $r3 = current PC (approximately)
-    addi.w  $r3, $r3, 20       # Point to after the jirl sequence
-    
-    # Jump to func3 (forward)
-    b       call_func3
-
-after_func3:
-    addi.w  $r10, $r10, 1      # $r10 = 7 (back from func3)
-
-    # Test 4: Nested function calls
     bl      func_outer
-    addi.w  $r10, $r10, 1      # $r10 = 12 (returned from outer)
-
-    # Test 5: jirl with $r0 as destination (no link, pure jump)
+    # After nested calls, $r10 should be 11
+    addi.w  $r10, $r10, 1      # $r10 = 12
+    st.w    $r10, $r20, 4
+    # ==========================================
+    # Test 3: jirl with explicit return address
+    # ==========================================
+test_jirl_explicit:
     addi.w  $r10, $r10, 1      # $r10 = 13
-    pcaddu12i $r4, 0
-    addi.w  $r4, $r4, 16       # Point to skip_target
-    jirl    $r0, $r4, 0        # Jump without saving return address
-    addi.w  $r10, $r0, -1      # Should be skipped
+    pcaddu12i $r21, 0
+    addi.w  $r21, $r21, 36     # Point to after_jirl_explicit
+    pcaddu12i $r22, 0
+    addi.w  $r22, $r22, 20     # Point to jirl_target
+    jirl    $r0, $r22, 0
+    
+    # This should be skipped
+    addi.w  $r10, $r0, -1      # Error marker
     b       test_fail
-
-skip_target:
+    
+jirl_target:
     addi.w  $r10, $r10, 1      # $r10 = 14
+    jirl    $r0, $r21, 0
+    
+after_jirl_explicit:
+    addi.w  $r10, $r10, 1      # $r10 = 15
+    st.w    $r10, $r20, 8
+    
+    # ==========================================
+    # Test 4: jirl with offset
+    # ==========================================
+test_jirl_offset:
+    addi.w  $r10, $r10, 1      # $r10 = 16
+    
+    pcaddu12i $r23, 0
+    addi.w  $r23, $r23, 12
+    jirl    $r0, $r23, 8       # Point to jirl_offset_target
+    
+    # These should be skipped
+    addi.w  $r10, $r0, -1
+    addi.w  $r10, $r0, -1
+    
+jirl_offset_target:
+    addi.w  $r10, $r10, 1      # $r10 = 17
+    st.w    $r10, $r20, 12
+    
+    # ==========================================
+    # Test 5: jirl with $r0 as destination (pure jump)
+    # ==========================================
+test_jirl_pure_jump:
+    addi.w  $r10, $r10, 1      # $r10 = 18
+    
+    pcaddu12i $r24, 0
+    addi.w  $r24, $r24, 20     # Point to pure_jump_target
+    jirl    $r0, $r24, 0
+    
+    # This should be skipped
+    addi.w  $r10, $r0, -1
+    b       test_fail
+    
+pure_jump_target:
+    addi.w  $r10, $r10, 1      # $r10 = 19
+    st.w    $r10, $r20, 16
+    
+    # ==========================================
+    # Test 6: Forward and backward branches
+    # ==========================================
+test_forward_branch:
+    addi.w  $r10, $r10, 1      # $r10 = 20
+    b       forward_target
+    
+    # This should be skipped
+    addi.w  $r10, $r0, -1
 
+backward_target:
+    addi.w  $r10, $r10, 1      # $r10 = 22
     b       test_done
 
-# ==========================================
-# Function definitions
-# ==========================================
+forward_target:
+    addi.w  $r10, $r10, 1      # $r10 = 21
+    b       backward_target
+    
+    # ==========================================
+    # Function Definitions
+    # ==========================================
 
-func1:
-    # Simple function that increments $r10
+func_bl_basic:
     addi.w  $r10, $r10, 1      # $r10 = 2
     addi.w  $r10, $r10, 1      # $r10 = 3
-    jirl    $r0, $r1, 0        # Return (jump to $r1, don't save link)
-
-call_func3:
-    bl      func3
-    b       after_func3
-
-func3:
-    addi.w  $r10, $r10, 1      # $r10 = 6
-    jirl    $r0, $r1, 0        # Return
+    jirl    $r0, $r1, 0
 
 func_outer:
-    # Save return address
-    addi.w  $r30, $r1, 0       # $r30 = saved return address
+    addi.w  $r30, $r1, 0
     
-    addi.w  $r10, $r10, 1      # $r10 = 8
+    addi.w  $r10, $r10, 1      # $r10 = 6
     bl      func_inner
     addi.w  $r10, $r10, 1      # $r10 = 10 (back from inner)
     addi.w  $r10, $r10, 1      # $r10 = 11
     
-    # Restore return address and return
-    jirl    $r0, $r30, 0       # Return to original caller
+    jirl    $r0, $r30, 0
 
+# Test 2: Inner function
 func_inner:
+    addi.w  $r10, $r10, 1      # $r10 = 7
+    addi.w  $r10, $r10, 1      # $r10 = 8
     addi.w  $r10, $r10, 1      # $r10 = 9
-    jirl    $r0, $r1, 0        # Return
+    jirl    $r0, $r1, 0
 
+# ==========================================
+# Test failure handler
+# ==========================================
 test_fail:
-    addi.w  $r10, $r0, -1      # Mark test as failed
+    addi.w  $r10, $r0, -1
 
+# ==========================================
+# Test completion
+# ==========================================
 test_done:
-    # Store final result
-    st.w    $r10, $r20, 0      # Store test result (should be 14 if all passed)
-
-    # Test jirl with different offsets
-    addi.w  $r11, $r0, 0       # Counter
-
-    # Test jirl offset functionality
-    pcaddu12i $r5, 0
-    addi.w  $r5, $r5, 8        # Base address
-    # jirl with positive offset
-    jirl    $r0, $r5, 8        # Jump to $r5 + 8
-    addi.w  $r11, $r0, -1      # Should be skipped
-    addi.w  $r11, $r0, -1      # Should be skipped
-    addi.w  $r11, $r11, 1      # $r11 = 1 (target of jirl)
-
-    st.w    $r11, $r20, 4      # Store result
+    st.w    $r10, $r20, 20

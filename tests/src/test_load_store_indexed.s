@@ -16,16 +16,16 @@ _start:
     addi.w  $r5, $r0, 16       # $r5 = 16 (index 16)
 
     # Initialize test values
-    lu12i.w $r6, 0x12345       # $r6 = 0x12345000
-    ori     $r6, $r6, 0xF01    # $r6 = 0x12345F01
+    lu12i.w $r6, 0x1234E       # $r6 = 0x1234E000
+    ori     $r6, $r6, 0xF01    # $r6 = 0x1234EF01
 
     addi.w  $r7, $r0, -1       # $r7 = 0xFFFFFFFF
     addi.w  $r8, $r0, 0x7F     # $r8 = 0x7F (127)
     addi.w  $r9, $r0, -128     # $r9 = 0xFFFFFF80 (-128)
 
     # Test stx.w (store word indexed) and ldx.w (load word indexed)
-    stx.w   $r6, $r20, $r1     # Store 0xABCDEF01 at base+0
-    ldx.w   $r10, $r20, $r1    # $r10 = 0xABCDEF01
+    stx.w   $r6, $r20, $r1     # Store 0x1234EF01 at base+0
+    ldx.w   $r10, $r20, $r1    # $r10 = 0x1234EF01
 
     stx.w   $r7, $r20, $r2     # Store 0xFFFFFFFF at base+4
     ldx.w   $r11, $r20, $r2    # $r11 = 0xFFFFFFFF

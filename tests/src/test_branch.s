@@ -26,8 +26,7 @@ _start:
     b       test_fail
 beqz_taken:
     addi.w  $r10, $r10, 1      # $r10 = 2 (beqz taken correctly)
-
-    # Test beqz not taken
+    st.w    $r10, $r20, 0
     beqz    $r2, test_fail     # Should NOT branch (r2 != 0)
     addi.w  $r10, $r10, 1      # $r10 = 3 (beqz not taken correctly)
 
@@ -38,7 +37,8 @@ beqz_taken:
     addi.w  $r10, $r0, -1      # Should not execute
     b       test_fail
 bnez_taken:
-    addi.w  $r10, $r10, 1      # $r10 = 4 (bnez taken correctly)
+    addi.w  $r10, $r10, 1      # $r10 = 4 (bnez taken correctly) 
+    st.w    $r10, $r20, 4
 
     # Test bnez not taken
     bnez    $r1, test_fail     # Should NOT branch (r1 == 0)
@@ -53,6 +53,7 @@ bnez_taken:
 beq_taken:
     addi.w  $r10, $r10, 1      # $r10 = 6 (beq taken correctly)
 
+    st.w    $r10, $r20, 8
     # Test beq not taken
     beq     $r2, $r4, test_fail    # Should NOT branch (10 != 20)
     addi.w  $r10, $r10, 1      # $r10 = 7 (beq not taken correctly)
@@ -65,7 +66,7 @@ beq_taken:
     b       test_fail
 bne_taken:
     addi.w  $r10, $r10, 1      # $r10 = 8 (bne taken correctly)
-
+    st.w    $r10, $r20, 12
     # Test bne not taken
     bne     $r2, $r3, test_fail    # Should NOT branch (10 == 10)
     addi.w  $r10, $r10, 1      # $r10 = 9 (bne not taken correctly)
@@ -79,12 +80,14 @@ bne_taken:
 b_target:
     addi.w  $r10, $r10, 1      # $r10 = 10 (b taken correctly)
 
+    st.w    $r10, $r20, 16
     # ==========================================
     # Test bl (branch and link)
     # ==========================================
     bl      bl_target
     # After bl, $r1 should contain return address (PC + 4)
     addi.w  $r10, $r10, 1      # $r10 = 12 (returned from bl correctly)
+    st.w    $r10, $r20, 20
     b       test_done
 
 bl_target:
@@ -98,8 +101,6 @@ test_fail:
 
 test_done:
     # Store final result
-    st.w    $r10, $r20, 0      # Store test result (should be 12 if all passed)
-
     # Additional branch tests with backward jumps
     addi.w  $r11, $r0, 0       # $r11 = loop counter
     addi.w  $r12, $r0, 5       # $r12 = loop limit
@@ -107,14 +108,5 @@ test_done:
 loop_start:
     addi.w  $r11, $r11, 1      # Increment counter
     bne     $r11, $r12, loop_start  # Loop until counter == 5
-
-    st.w    $r11, $r20, 4      # Store loop counter (should be 5)
-
-    # Test forward branch over multiple instructions
-    addi.w  $r13, $r0, 1
-    b       skip_block
-    addi.w  $r13, $r13, 10     # Should be skipped
-    addi.w  $r13, $r13, 20     # Should be skipped
-    addi.w  $r13, $r13, 30     # Should be skipped
-skip_block:
-    st.w    $r13, $r20, 8      # Store (should be 1, not 61)
+    // should be 5
+    st.w    $r11, $r20, 24

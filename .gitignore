@@ -2,3 +2,6 @@
 target/
 .mooncakes/
 .moonagent/
+tests/bin/*
+_coverage/
+.vscode/

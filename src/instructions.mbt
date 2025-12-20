@@ -107,7 +107,7 @@ enum InstructionType {
 ///|
 pub enum Instruction {
   La32Base(La32BaseInstruction)
-}
+} derive (Show)
 
 ///|
 struct Inst_CdFj {

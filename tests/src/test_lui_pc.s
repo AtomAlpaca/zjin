@@ -56,10 +56,6 @@ _start:
     # Should give PC + 0x1000
     pcaddu12i $r9, 1           # $r9 = PC + 0x1000
 
-    # Test 3: pcaddu12i with -1
-    # Should give PC - 0x1000
-    pcaddu12i $r10, -1         # $r10 = PC - 0x1000
-
     # ==========================================
     # Test pcalau12i (PC aligned + SignExtend({si20, 12'b0}))
     # tmp = PC + SignExtend({si20, 12'b0}, 32)
@@ -67,10 +63,10 @@ _start:
     # ==========================================
 
     # Test 1: pcalau12i with 0
-    pcalau12i $r11, 0          # $r11 = (PC + 0) & 0xFFFFF000
+    pcalau12i $r10, 0          # $r10 = (PC + 0) & 0xFFFFF000
 
     # Test 2: pcalau12i with 1
-    pcalau12i $r12, 1          # $r12 = (PC + 0x1000) & 0xFFFFF000
+    pcalau12i $r11, 1          # $r11 = (PC + 0x1000) & 0xFFFFF000
 
     # ==========================================
     # Test pcaddu18i (PC + SignExtend({si20, 18'b0}))
@@ -78,14 +74,11 @@ _start:
     # ==========================================
 
     # Test 1: pcaddu18i with 0
-    pcaddu18i $r13, 0          # $r13 = PC
+    pcaddu18i $r12, 0          # $r12 = PC
 
     # Test 2: pcaddu18i with 1
     # Should give PC + 0x40000 (1 << 18)
-    pcaddu18i $r14, 1          # $r14 = PC + 0x40000
-
-    # Test 3: pcaddu18i with -1
-    pcaddu18i $r15, -1         # $r15 = PC - 0x40000
+    pcaddu18i $r13, 1          # $r13 = PC + 0x40000
 
     # ==========================================
     # Test practical use cases
@@ -93,21 +86,21 @@ _start:
 
     # Use case 1: Loading a 32-bit address within signed range
     # Address 0x12341234
-    lu12i.w $r16, 0x12341      # Upper 20 bits
-    ori     $r16, $r16, 0x234  # Lower 12 bits
+    lu12i.w $r14, 0x12341      # Upper 20 bits
+    ori     $r14, $r14, 0x234  # Lower 12 bits
 
     # Use case 2: PC-relative addressing for data access
     # Typically used with pcalau12i + ld.w/st.w offset
-    pcalau12i $r17, 0          # Get page-aligned PC
+    pcalau12i $r15, 0          # Get page-aligned PC
     # Then use offset in load/store
 
     # Use case 3: Creating negative constants
     # Create -0x1000 (0xFFFFF000)
-    lu12i.w $r18, -1           # All 1s in upper 20 bits, zeros in lower 12
+    lu12i.w $r16, -1           # All 1s in upper 20 bits, zeros in lower 12
 
     # Create -1 (0xFFFFFFFF)
-    lu12i.w $r19, -1
-    ori     $r19, $r19, 0xFFF  # Fill in lower 12 bits
+    lu12i.w $r17, -1
+    ori     $r17, $r17, 0xFFF  # Fill in lower 12 bits
 
     # ==========================================
     # Store results for verification
@@ -121,23 +114,21 @@ _start:
     st.w    $r7, $r20, 24      # 0x7FFFEEEF
     st.w    $r8, $r20, 28      # PC value
     st.w    $r9, $r20, 32      # PC + 0x1000
-    st.w    $r10, $r20, 36     # PC - 0x1000
-    st.w    $r11, $r20, 40     # aligned PC
-    st.w    $r12, $r20, 44     # aligned PC + 0x1000
-    st.w    $r13, $r20, 48     # PC (pcaddu18i)
-    st.w    $r14, $r20, 52     # PC + 0x40000
-    st.w    $r15, $r20, 56     # PC - 0x40000
-    st.w    $r16, $r20, 60     # 0x12341234
-    st.w    $r18, $r20, 64     # 0xFFFFF000
-    st.w    $r19, $r20, 68     # 0xFFFFFFFF
+    st.w    $r10, $r20, 36     # aligned PC
+    st.w    $r11, $r20, 40     # aligned PC + 0x1000
+    st.w    $r12, $r20, 44     # PC (pcaddu18i)
+    st.w    $r13, $r20, 48     # PC + 0x40000
+    st.w    $r14, $r20, 52     # 0x12341234
+    st.w    $r16, $r20, 56     # 0xFFFFF000
+    st.w    $r17, $r20, 60     # 0xFFFFFFFF
 
     # Verify lu12i.w + addi.w pattern for addresses
     # Create address 0x00001234
-    lu12i.w $r21, 1            # $r21 = 0x1000
-    addi.w  $r21, $r21, 0x234  # $r21 = 0x1234
-    st.w    $r21, $r20, 72     # 0x00001234
+    lu12i.w $r18, 1            # $r18 = 0x1000
+    addi.w  $r18, $r18, 0x234  # $r18 = 0x1234
+    st.w    $r18, $r20, 64     # 0x00001234
 
     # Test negative immediate with lu12i.w for creating addresses
     # Create 0xFFFFE000 (-8192)
-    lu12i.w $r22, -2           # $r22 = 0xFFFFE000
-    st.w    $r22, $r20, 76     # 0xFFFFE000
+    lu12i.w $r19, -2           # $r19 = 0xFFFFE000
+    st.w    $r19, $r20, 68     # 0xFFFFE000

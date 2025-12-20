@@ -387,11 +387,11 @@ pub fn CPU::sra_w(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   let rk = self.get_reg(R(ins.k))
   guard rj is R(x)
   guard rk is R(y)
-  let tmp = get_bit_seg(x, 0, 31).reinterpret_as_int64() >>
+  let tmp = get_bit_seg(x, 0, 31).to_uint().reinterpret_as_int() >>
     get_bit_seg(y, 0, 4).to_int()
   self.set_reg(
     R(ins.d),
-    R(signed_extend(get_bit_seg(tmp.reinterpret_as_uint64(), 0, 31), 32, 64)),
+    R(signed_extend(get_bit_seg(tmp.to_uint64(), 0, 31), 32, 64)),
   )
   pc + 4
 }
@@ -464,11 +464,11 @@ pub fn CPU::srai_w(self : CPU, ins : Inst_DJUk5) -> UInt64 raise {
   let rj = self.get_reg(R(ins.j))
   let ui5 = ins.uk5
   guard rj is R(x)
-  let tmp = get_bit_seg(x, 0, 31).reinterpret_as_int64() >>
+  let tmp = get_bit_seg(x, 0, 31).to_uint().reinterpret_as_int() >>
     ui5.reinterpret_as_int()
   self.set_reg(
     R(ins.d),
-    R(signed_extend(get_bit_seg(tmp.reinterpret_as_uint64(), 0, 31), 32, 64)),
+    R(signed_extend(get_bit_seg(tmp.to_uint64(), 0, 31), 32, 64)),
   )
   pc + 4
 }
@@ -494,8 +494,8 @@ pub fn CPU::slti(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   let pc = self.get_pc()
   let rj = self.get_reg(R(ins.j))
   guard rj is R(x)
-  let y = ins.sk12
-  let res = (if x.reinterpret_as_int64() < y.to_int64() { 1 } else { 0 }).to_uint64()
+  let y = signed_extend(ins.sk12.to_uint64(), 12, 64)
+  let res = (if x.reinterpret_as_int64() < y.reinterpret_as_int64() { 1 } else { 0 }).to_uint64()
   self.set_reg(R(ins.d), R(res))
   pc + 4
 }
@@ -522,7 +522,10 @@ pub fn CPU::addi_w(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let y = signed_extend(ins.sk12.to_uint64(), 12, 32).reinterpret_as_int64()
   let res = get_bit_seg(x, 0, 31).reinterpret_as_int64() + y
-  self.set_reg(R(ins.d), R(get_bit_seg(res.reinterpret_as_uint64(), 0, 31)))
+  self.set_reg(
+    R(ins.d),
+    R(signed_extend(get_bit_seg(res.reinterpret_as_uint64(), 0, 31), 32, 64)),
+  )
   pc + 4
 }
 
@@ -546,7 +549,7 @@ pub fn CPU::ori(self : CPU, ins : Inst_DJUk12) -> UInt64 raise {
   guard rj is R(x)
   let y = ins.uk12
   let res = x | y.to_uint64()
-  self.set_reg(R(ins.d), R(get_bit_seg(res, 0, 31)))
+  self.set_reg(R(ins.d), R(res))
   pc + 4
 }
 
@@ -566,8 +569,8 @@ pub fn CPU::xori(self : CPU, ins : Inst_DJUk12) -> UInt64 raise {
 /// GR[rd] = SignExtend({si20, 12'b0}, GRLEN)
 pub fn CPU::lu12i_w(self : CPU, ins : Inst_DSj20) -> UInt64 raise {
   let pc = self.get_pc()
-  let si20 = ins.sj20
-  let res = signed_extend((si20 << 12).to_uint64(), 32, 64)
+  let si20 = ins.sj20.to_uint64()
+  let res = signed_extend(si20 << 12, 32, 64)
   self.set_reg(R(ins.d), R(res))
   pc + 4
 }
@@ -598,7 +601,7 @@ pub fn CPU::pcaddu12i(self : CPU, ins : Inst_DSj20) -> UInt64 raise {
 ///|
 /// GR[rd] = PC + SignExtend({si20, 18'b0}, GRLEN)
 pub fn CPU::pcaddu18i(self : CPU, ins : Inst_DSj20) -> UInt64 raise {
-  let si20 = ins.sj20
+  let si20 = ins.sj20.reinterpret_as_uint()
   let pc = self.get_pc()
   let res = signed_extend((si20 << 18).to_uint64(), 32, 64) + pc
   self.set_reg(R(ins.d), R(res))
@@ -1006,7 +1009,7 @@ pub fn CPU::beq(self : CPU, ins : Inst_DJSk16) -> UInt64 raise {
   if x == y {
     pc + offset
   } else {
-    pc
+    pc + 4
   }
 }
 
@@ -1023,7 +1026,7 @@ pub fn CPU::bne(self : CPU, ins : Inst_DJSk16) -> UInt64 raise {
   if x != y {
     pc + offset
   } else {
-    pc
+    pc + 4
   }
 }
 
@@ -1041,7 +1044,7 @@ pub fn CPU::bgt(self : CPU, ins : Inst_DJSk16) -> UInt64 raise {
   if x.reinterpret_as_int64() >= y.reinterpret_as_int64() {
     pc + offset
   } else {
-    pc
+    pc + 4
   }
 }
 

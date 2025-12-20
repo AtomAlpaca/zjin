@@ -29,6 +29,7 @@ _start:
     b       test_fail
 bgt_taken1:
     addi.w  $r10, $r10, 1      # $r10 = 2
+    st.w    $r10, $r20, 0
 
     # Test: 10 > 20 (should NOT branch)
     bgt     $r2, $r1, test_fail    # bgt $r2, $r1 means branch if $r1 >= $r2
@@ -40,12 +41,14 @@ bgt_taken1:
 bgt_taken2:
     addi.w  $r10, $r10, 1      # $r10 = 4
 
+    st.w    $r10, $r20, 4
     # Test with negative: -5 vs 10 (signed comparison)
     # -5 is less than 10 in signed, so 10 >= -5 should branch
     bgt     $r4, $r1, bgt_taken3   # branch if $r1 >= $r4 (10 >= -5)
     b       test_fail
 bgt_taken3:
     addi.w  $r10, $r10, 1      # $r10 = 5
+    st.w    $r10, $r20, 8
 
     # ==========================================
     # Test ble (branch if less than or equal, signed)
@@ -56,6 +59,7 @@ bgt_taken3:
     b       test_fail
 ble_taken1:
     addi.w  $r10, $r10, 1      # $r10 = 6
+    st.w    $r10, $r20, 12
 
     # Test: 20 < 10 (should NOT branch)
     ble     $r1, $r2, test_fail    # branch if $r2 < $r1
@@ -66,12 +70,14 @@ ble_taken1:
     b       test_fail
 ble_taken2:
     addi.w  $r10, $r10, 1      # $r10 = 8
+    st.w    $r10, $r20, 16
 
     # Test: -10 < -5 (both negative)
     ble     $r4, $r5, ble_taken3   # branch if $r5 < $r4 (-10 < -5)
     b       test_fail
 ble_taken3:
     addi.w  $r10, $r10, 1      # $r10 = 9
+    st.w    $r10, $r20, 20
 
     # ==========================================
     # Test bgtu (branch if greater than, unsigned)
@@ -82,12 +88,14 @@ ble_taken3:
     b       test_fail
 bgtu_taken1:
     addi.w  $r10, $r10, 1      # $r10 = 10
+    st.w    $r10, $r20, 24
 
     # Test: 0xFFFFFFFB (-5) > 10 unsigned (should branch, -5 is large unsigned)
     bgtu    $r1, $r4, bgtu_taken2  # branch if $r4 >= $r1 (unsigned)
     b       test_fail
 bgtu_taken2:
     addi.w  $r10, $r10, 1      # $r10 = 11
+    st.w    $r10, $r20, 28
 
     # Test: 10 > 0xFFFFFFFB unsigned (should NOT branch)
     bgtu    $r4, $r1, test_fail    # branch if $r1 >= $r4 (unsigned)
@@ -102,12 +110,14 @@ bgtu_taken2:
     b       test_fail
 bleu_taken1:
     addi.w  $r10, $r10, 1      # $r10 = 13
+    st.w    $r10, $r20, 32
 
     # Test: 10 < 0xFFFFFFFB unsigned (should branch)
     bleu    $r4, $r1, bleu_taken2  # branch if $r1 < $r4 (unsigned)
     b       test_fail
 bleu_taken2:
     addi.w  $r10, $r10, 1      # $r10 = 14
+    st.w    $r10, $r20, 36
 
     # Test: 0xFFFFFFFB < 10 unsigned (should NOT branch)
     bleu    $r1, $r4, test_fail    # branch if $r4 < $r1 (unsigned)
@@ -119,10 +129,6 @@ test_fail:
     addi.w  $r10, $r0, -1      # Mark test as failed
 
 test_done:
-    # Store final result
-    st.w    $r10, $r20, 0      # Store test result (should be 15 if all passed)
-
-    # Additional tests: loop using comparison branches
     addi.w  $r11, $r0, 0       # $r11 = counter
     addi.w  $r12, $r0, 10      # $r12 = limit
 
@@ -130,7 +136,7 @@ count_loop:
     addi.w  $r11, $r11, 1
     ble     $r12, $r11, count_loop  # while $r11 < $r12
     
-    st.w    $r11, $r20, 4      # Store counter (should be 10)
+    st.w    $r11, $r20, 40      # Store counter (should be 10)
 
     # Sum from 1 to 5 using comparison branch
     addi.w  $r13, $r0, 0       # $r13 = sum
@@ -140,10 +146,12 @@ count_loop:
 sum_loop:
     add.w   $r13, $r13, $r14   # sum += i
     addi.w  $r14, $r14, 1      # i++
-    bgt     $r14, $r15, sum_done   # if i > 5, exit (branch if $r15 >= $r14)
+    bgt     $r15, $r14, sum_done   # if i >= 5, exit (branch if $r15 >= $r14)
     b       sum_loop
 
 sum_done:
-    # Note: the loop condition means we include i when i <= 5
-    # So sum = 1+2+3+4+5 = 15... but we need to check the exact semantics
-    st.w    $r13, $r20, 8      # Store sum
+    # sum = 1+2+3+4 = 10
+    st.w    $r13, $r20, 44
+
+
+
