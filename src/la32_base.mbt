@@ -495,7 +495,11 @@ pub fn CPU::slti(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   let rj = self.get_reg(R(ins.j))
   guard rj is R(x)
   let y = signed_extend(ins.sk12.to_uint64(), 12, 64)
-  let res = (if x.reinterpret_as_int64() < y.reinterpret_as_int64() { 1 } else { 0 }).to_uint64()
+  let res = (if x.reinterpret_as_int64() < y.reinterpret_as_int64() {
+    1
+  } else {
+    0
+  }).to_uint64()
   self.set_reg(R(ins.d), R(res))
   pc + 4
 }

@@ -9,6 +9,15 @@ struct CPU {
 }
 
 ///|
+const PALEN = 60
+
+///|
+const VALEN = 40
+
+///|
+const GRLEN = 64
+
+///|
 suberror RegAccessError {
   UnknownReg(String, Reg)
   UnmatchedType(String, Reg, Reg_Value)
@@ -130,7 +139,6 @@ pub fn CPU::set_reg(
 ///
 /// ```moonbit
 /// let cpu = CPU::make_CPU()
-/// 
 /// ```
 ///
 pub fn CPU::make_CPU() -> CPU {
