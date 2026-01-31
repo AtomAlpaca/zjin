@@ -2,11 +2,11 @@
   "name": "AtomAlpaca/zjin",
   "version": "0.1.0",
   "deps": {
-    "moonbitlang/x": "0.4.36"
+    "moonbitlang/x": "0.4.38"
   },
   "readme": "README.mbt.md",
   "repository": "",
-  "license": "",
+  "license": "MIT",
   "keywords": [],
   "description": "Zjin(辰) is a loongarch Emulator"
 }

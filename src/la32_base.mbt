@@ -624,7 +624,7 @@ pub fn CPU::ld_b(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=1)
   let res = signed_extend(get_bit_seg(byte, 0, 7), 8, 64)
   self.set_reg(R(ins.d), R(res))
@@ -643,7 +643,7 @@ pub fn CPU::ld_h(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=2)
   let res = signed_extend(get_bit_seg(byte, 0, 15), 16, 64)
   self.set_reg(R(ins.d), R(res))
@@ -662,7 +662,7 @@ pub fn CPU::ld_w(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=4)
   let res = signed_extend(get_bit_seg(byte, 0, 31), 32, 64)
   self.set_reg(R(ins.d), R(res))
@@ -682,7 +682,7 @@ pub fn CPU::st_b(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rd is R(y)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(y, 0, 7), size=1)
   pc + 4
 }
@@ -700,7 +700,7 @@ pub fn CPU::st_h(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rd is R(y)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(y, 0, 15), size=2)
   pc + 4
 }
@@ -718,7 +718,7 @@ pub fn CPU::st_w(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rd is R(y)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(y, 0, 31), size=4)
   pc + 4
 }
@@ -731,7 +731,7 @@ pub fn CPU::ld_bu(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=1)
   let res = zero_extend(get_bit_seg(byte, 0, 7), 8, 64)
   self.set_reg(R(ins.d), R(res))
@@ -750,7 +750,7 @@ fn CPU::ld_hu(self : CPU, ins : Inst_DJSk12) -> UInt64 raise {
   guard rj is R(x)
   let si12 = ins.sk12
   let vaddr = signed_extend(si12.to_uint64(), 12, 64) + x
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=2)
   let res = zero_extend(get_bit_seg(byte, 0, 15), 16, 64)
   self.set_reg(R(ins.d), R(res))
@@ -776,7 +776,7 @@ pub fn CPU::ldx_b(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rj is R(x)
   guard rk is R(y)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=1)
   let res = signed_extend(get_bit_seg(byte, 0, 7), 8, 64)
   self.set_reg(R(ins.d), R(res))
@@ -796,7 +796,7 @@ pub fn CPU::ldx_h(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rj is R(x)
   guard rk is R(y)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=2)
   let res = signed_extend(get_bit_seg(byte, 0, 15), 16, 64)
   self.set_reg(R(ins.d), R(res))
@@ -816,7 +816,7 @@ pub fn CPU::ldx_w(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rj is R(x)
   guard rk is R(y)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=4)
   let res = signed_extend(get_bit_seg(byte, 0, 31), 32, 64)
   self.set_reg(R(ins.d), R(res))
@@ -837,7 +837,7 @@ pub fn CPU::stx_b(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rk is R(y)
   guard rd is R(z)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(z, 0, 7), size=1)
   pc + 4
 }
@@ -856,7 +856,7 @@ pub fn CPU::stx_h(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rk is R(y)
   guard rd is R(z)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(z, 0, 15), size=2)
   pc + 4
 }
@@ -875,7 +875,7 @@ pub fn CPU::stx_w(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rk is R(y)
   guard rd is R(z)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Store)
   self.bus.store(paddr.to_uint(), get_bit_seg(z, 0, 31), size=4)
   pc + 4
 }
@@ -893,7 +893,7 @@ pub fn CPU::ldx_bu(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rj is R(x)
   guard rk is R(y)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=1)
   let res = zero_extend(get_bit_seg(byte, 0, 7), 8, 64)
   self.set_reg(R(ins.d), R(res))
@@ -913,7 +913,7 @@ pub fn CPU::ldx_hu(self : CPU, ins : Inst_DJK) -> UInt64 raise {
   guard rj is R(x)
   guard rk is R(y)
   let vaddr = x + y
-  let paddr = vaddr // TODO: vaddr
+  let paddr = self.translate_vaddr(vaddr, Load)
   let byte = self.bus.load(paddr.to_uint(), size=2)
   let res = zero_extend(get_bit_seg(byte, 0, 15), 16, 64)
   self.set_reg(R(ins.d), R(res))

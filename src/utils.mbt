@@ -107,3 +107,58 @@ const OPCODE_MASK_DJSk16 : UInt = 0xfc000000
 
 ///|
 const OPCODE_MASK_Sd10k16 : UInt = 0xfc000000
+
+///|
+/// Sets a segment of bits in a bit container to a given value.
+///
+/// Parameters:
+///
+/// * `num` (BitContainer/UInt64): The bit container value to modify.
+/// * `begin` (Int): The starting bit position (inclusive). Must be between 0 and 63.
+/// * `end` (Int): The ending bit position (inclusive). Must be between 0 and 63.
+/// * `value` (UInt64): The value to set in the specified bit range.
+///
+/// Returns a new bit container with the specified bits set to the given value.
+///
+/// The function handles various edge cases:
+/// - If begin > end, returns the original number unchanged
+/// - If begin or end are out of bounds (negative or > 63), clamps to valid range
+/// - If begin == end, sets a single bit
+/// - If end == 63, handles the special case of setting the uppermost bits
+///
+/// Example:
+///
+/// ```
+/// // Set bits 4-7 of 0x00000000 to value 0xF (1111 in binary)
+/// let result = set_bit_seg(0x00000000, 4, 7, 0xF)
+/// // Result: 0x000000F0
+///
+/// // Set bits 0-3 of 0x12345678 to value 0x5
+///
+/// let result = set_bit_seg(0x12345678, 0, 3, 0x5)
+/// // Original: ...78 (hex) = ...0111 1000 (binary)
+/// // Setting bits 0-3 to 0101 (binary = 5 decimal)
+/// // Result: ...0101 = 0x5 (for the lower 4 bits)
+/// ```
+///
+pub fn set_bit_seg(
+  num : BitContainer,
+  begin : Int,
+  end : Int,
+  value : UInt64,
+) -> BitContainer {
+  let _begin = if begin < 0 { 0 } else if begin > 63 { 63 } else { begin }
+  let _end = if end < 0 { 0 } else if end > 63 { 63 } else { end }
+  if _begin > _end {
+    return num
+  }
+  let w = _end - _begin + 1
+  let mask : UInt64 = if w == 64 {
+    ALL_ONE_MASK
+  } else {
+    ((1UL << w) - 1UL) << _begin
+  }
+  let x = num & mask.lnot()
+  let v = (value << _begin) & mask
+  x | v
+}

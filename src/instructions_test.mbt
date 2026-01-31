@@ -118,3 +118,30 @@ test "test Sd10k16 decode" {
   // 39175240[16:25] =                       0b1001010101
   inspect(decode_Sd10k16(inst), content="{opcode: 60, sd10k16: 39175240}")
 }
+
+///|
+test "test set_bit_seg function" {
+  // Test basic functionality
+  let result1 = set_bit_seg(0x0, 4, 7, 0xF)
+  inspect(result1, content="240") // 0xF0 = 240 in decimal
+  let result2 = set_bit_seg(0x12345678, 0, 3, 0x5)
+  inspect(result2, content="305419893") // 0x12345678 with lower 4 bits set to 0x5 = 0x12345675
+
+  // Test single bit setting
+  let result3 = set_bit_seg(0x0, 5, 5, 0x1)
+  inspect(result3, content="32") // 1 << 5 = 32
+
+  // Test boundary condition
+  let result4 = set_bit_seg(0x0, 0, 63, 0x123456789ABCDEF0UL)
+  inspect(result4, content="1311768467284833360")
+
+  // Test invalid range (should return original number)
+  let result5 = set_bit_seg(0x12345678, 10, 5, 0xF)
+  inspect(result5, content="305419896") // Should remain unchanged
+
+  // Test out of bounds values (should clamp to valid range)
+  let result6 = set_bit_seg(0x0, -5, 10, 0xF)
+  inspect(result6, content="15") // Should treat begin as 0
+  let result7 = set_bit_seg(0x0, 5, 70, 0xF)
+  inspect(result7, content="511") // Should treat end as 63, so bits 5-63, but only set the lower 4 bits of value in those positions
+}

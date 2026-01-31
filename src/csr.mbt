@@ -87,19 +87,20 @@ enum CSR_Type {
 }
 
 ///|
-pub fn CSR::get_csr(self : CSR, csr_num : Int) -> UInt64 {
-  if csr_num >= 0x502 || csr_num < 0 {
+pub fn CSR::get_csr(self : CSR, csr_add : UInt64) -> UInt64 {
+  if csr_add >= 0x502 {
     0
   } else {
-    self.regs[csr_num]
+    self.regs[csr_add.to_int()]
   }
 }
 
-pub fn CSR::set_csr(self : CSR, csr_num : Int, val : UInt64) -> Unit {
-  if csr_num >= 0x502 || csr_num < 0 {
+///|
+pub fn CSR::set_csr(self : CSR, csr_add : UInt64, val : UInt64) -> Unit {
+  if csr_add >= 0x502 {
     return
   }
-  self.regs[csr_num] = val
+  self.regs[csr_add.to_int()] = val
 }
 
 ///|
@@ -108,8 +109,8 @@ suberror CSR_Access_Error {
 }
 
 ///|
-pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
-  let add = match csr_type {
+pub fn CSR::get_csr_address(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
+  match csr_type {
     CRMD => 0x0
     PRMD => 0x1
     EUEN => 0x2
@@ -142,7 +143,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid SAVEn CSR number".to_string(),
         )
       }
-      0x30 + n
+      0x30 + n.to_uint64()
     }
     TID => 0x40
     TCFG => 0x41
@@ -179,7 +180,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid DMWn CSR number".to_string(),
         )
       }
-      0x180 + n
+      0x180 + n.to_uint64()
     }
     PMCFGn(n) => {
       if n < 0 || n > 31 {
@@ -187,7 +188,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid PMCFGn CSR number".to_string(),
         )
       }
-      0x200 + 2 * n
+      0x200 + 2 * n.to_uint64()
     }
     PMCNTn(n) => {
       if n < 0 || n > 31 {
@@ -195,7 +196,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid PMCNTn CSR number".to_string(),
         )
       }
-      0x201 + 2 * n
+      0x201 + 2 * n.to_uint64()
     }
     MWPC => 0x300
     MWPS => 0x301
@@ -205,7 +206,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid MWPnCFGn CSR number".to_string(),
         )
       }
-      0x310 + 8 * n
+      0x310 + 8 * n.to_uint64()
     }
     MWPnCFG2(n) => {
       if n < 0 || n > 13 {
@@ -213,7 +214,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid MWPnCFG2 CSR number".to_string(),
         )
       }
-      0x311 + 8 * n
+      0x311 + 8 * n.to_uint64()
     }
     MWPnCFG3(n) => {
       if n < 0 || n > 13 {
@@ -221,7 +222,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid MWPnCFG3 CSR number".to_string(),
         )
       }
-      0x312 + 8 * n
+      0x312 + 8 * n.to_uint64()
     }
     MWPnCFG4(n) => {
       if n < 0 || n > 13 {
@@ -229,7 +230,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid MWPnCFG4 CSR number".to_string(),
         )
       }
-      0x313 + 8 * n
+      0x313 + 8 * n.to_uint64()
     }
     FWPC => 0x380
     FWPS => 0x381
@@ -239,7 +240,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid FWPnCFG1 CSR number".to_string(),
         )
       }
-      0x390 + 8 * n
+      0x390 + 8 * n.to_uint64()
     }
     FWPnCFG2(n) => {
       if n < 0 || n > 13 {
@@ -247,7 +248,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid FWPnCFG2 CSR number".to_string(),
         )
       }
-      0x391 + 8 * n
+      0x391 + 8 * n.to_uint64()
     }
     FWPnCFG3(n) => {
       if n < 0 || n > 13 {
@@ -255,7 +256,7 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid FWPnCFG3 CSR number".to_string(),
         )
       }
-      0x392 + 8 * n
+      0x392 + 8 * n.to_uint64()
     }
     FWPnCFG4(n) => {
       if n < 0 || n > 13 {
@@ -263,13 +264,28 @@ pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
           "Invalid FWPnCFG4 CSR number".to_string(),
         )
       }
-      0x393 + 8 * n
+      0x393 + 8 * n.to_uint64()
     }
     DBG => 0x500
     DERA => 0x501
     DSAVE => 0x502
   }
+}
+
+///|
+pub fn CSR::get_csr_by_type(self : CSR, csr_type : CSR_Type) -> UInt64 raise {
+  let add = self.get_csr_address(csr_type)
   self.get_csr(add)
+}
+
+///|
+pub fn CSR::set_csr_by_type(
+  self : CSR,
+  csr_type : CSR_Type,
+  val : UInt64,
+) -> Unit raise {
+  let add = self.get_csr_address(csr_type)
+  self.set_csr(add, val)
 }
 
 ///|
@@ -445,8 +461,8 @@ enum PGD_Field {
 enum PWCL_Field {
   PTbase
   PTwidth
-  Dirl_base
-  Dirl_width
+  Dir1_base
+  Dir1_width
   Dir2_base
   Dir2_width
   PTEWidth
@@ -1003,8 +1019,8 @@ pub fn CSR::get_csr_field(self : CSR, field : CSR_Field) -> UInt64 raise {
       match x {
         PTbase => get_bit_seg(v, 0, 4)
         PTwidth => get_bit_seg(v, 5, 9)
-        Dirl_base => get_bit_seg(v, 10, 14)
-        Dirl_width => get_bit_seg(v, 15, 19)
+        Dir1_base => get_bit_seg(v, 10, 14)
+        Dir1_width => get_bit_seg(v, 15, 19)
         Dir2_base => get_bit_seg(v, 20, 24)
         Dir2_width => get_bit_seg(v, 25, 29)
         PTEWidth => get_bit_seg(v, 30, 31)
@@ -1337,6 +1353,635 @@ pub fn CSR::get_csr_field(self : CSR, field : CSR_Field) -> UInt64 raise {
       match x {
         PT => get_bit_seg(v, 0, 7)
       }
+    }
+  }
+}
+
+///|
+pub fn CSR::set_csr_field(
+  self : CSR,
+  field : CSR_Field,
+  value : UInt64,
+) -> Unit raise {
+  match field {
+    CRMD(x) => {
+      let v = self.get_csr_by_type(CRMD)
+      let new_v = match x {
+        PLV => set_bit_seg(v, 0, 1, value)
+        IE => set_bit_seg(v, 2, 2, value)
+        DA => set_bit_seg(v, 3, 3, value)
+        PG => set_bit_seg(v, 4, 4, value)
+        DATF => set_bit_seg(v, 5, 6, value)
+        DATM => set_bit_seg(v, 7, 8, value)
+        WE => set_bit_seg(v, 9, 9, value)
+      }
+      self.set_csr_by_type(CRMD, new_v)
+    }
+    PRMD(x) => {
+      let v = self.get_csr_by_type(PRMD)
+      let new_v = match x {
+        PPLV => set_bit_seg(v, 0, 1, value)
+        PID => set_bit_seg(v, 2, 2, value)
+        PWE => set_bit_seg(v, 3, 3, value)
+      }
+      self.set_csr_by_type(PRMD, new_v)
+    }
+    EUEN(x) => {
+      let v = self.get_csr_by_type(EUEN)
+      let new_v = match x {
+        FPE => set_bit_seg(v, 0, 0, value)
+        SXE => set_bit_seg(v, 1, 1, value)
+        ASXE => set_bit_seg(v, 2, 2, value)
+        BTE => set_bit_seg(v, 3, 3, value)
+      }
+      self.set_csr_by_type(EUEN, new_v)
+    }
+    MISC(x) => {
+      let v = self.get_csr_by_type(MISC)
+      let new_v = match x {
+        VA32L1 => set_bit_seg(v, 1, 1, value)
+        VA32L2 => set_bit_seg(v, 2, 2, value)
+        VA32L3 => set_bit_seg(v, 3, 3, value)
+        DRDTL1 => set_bit_seg(v, 5, 5, value)
+        DRDTL2 => set_bit_seg(v, 6, 6, value)
+        DRDTL3 => set_bit_seg(v, 7, 7, value)
+        RPCNTL1 => set_bit_seg(v, 9, 9, value)
+        RPCNTL2 => set_bit_seg(v, 10, 10, value)
+        RPCNTL3 => set_bit_seg(v, 11, 11, value)
+        ALCL0 => set_bit_seg(v, 12, 12, value)
+        ALCL1 => set_bit_seg(v, 13, 13, value)
+        ALCL2 => set_bit_seg(v, 14, 14, value)
+        ALCL3 => set_bit_seg(v, 15, 15, value)
+        DWPL0 => set_bit_seg(v, 16, 16, value)
+        DWPL1 => set_bit_seg(v, 17, 17, value)
+        DWPL2 => set_bit_seg(v, 18, 18, value)
+      }
+      self.set_csr_by_type(MISC, new_v)
+    }
+    ECFG(x) => {
+      let v = self.get_csr_by_type(ECFG)
+      let new_v = match x {
+        LIE => set_bit_seg(v, 0, 12, value)
+        VS => set_bit_seg(v, 16, 18, value)
+      }
+      self.set_csr_by_type(ECFG, new_v)
+    }
+    ESTAT(x) => {
+      let v = self.get_csr_by_type(ESTAT)
+      let new_v = match x {
+        IS => set_bit_seg(v, 0, 12, value)
+        MsgInt => set_bit_seg(v, 14, 14, value)
+        Ecode => set_bit_seg(v, 16, 21, value)
+        EsubCode => set_bit_seg(v, 22, 30, value)
+      }
+      self.set_csr_by_type(ESTAT, new_v)
+    }
+    ERA(x) => {
+      let v = self.get_csr_by_type(ERA)
+      let new_v = match x {
+        PC => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(ERA, new_v)
+    }
+    BADV(x) => {
+      let v = self.get_csr_by_type(BADV)
+      let new_v = match x {
+        VAddr => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(BADV, new_v)
+    }
+    BADI(x) => {
+      let v = self.get_csr_by_type(BADI)
+      let new_v = match x {
+        Inst => set_bit_seg(v, 0, 31, value)
+      }
+      self.set_csr_by_type(BADI, new_v)
+    }
+    EENTRY(x) => {
+      let v = self.get_csr_by_type(EENTRY)
+      let new_v = match x {
+        VPN => set_bit_seg(v, 12, 63, value)
+      }
+      self.set_csr_by_type(EENTRY, new_v)
+    }
+    RVACFG(x) => {
+      let v = self.get_csr_by_type(RVACFG)
+      let new_v = match x {
+        RBits => set_bit_seg(v, 0, 3, value)
+      }
+      self.set_csr_by_type(RVACFG, new_v)
+    }
+    CPUID(x) => {
+      let v = self.get_csr_by_type(CPUID)
+      let new_v = match x {
+        CoreID => set_bit_seg(v, 0, 8, value)
+      }
+      self.set_csr_by_type(CPUID, new_v)
+    }
+    PRCFG1(x) => {
+      let v = self.get_csr_by_type(PRCFG1)
+      let new_v = match x {
+        SAVENum => set_bit_seg(v, 0, 3, value)
+        TimerBits => set_bit_seg(v, 4, 11, value)
+        VSMax => set_bit_seg(v, 12, 14, value)
+      }
+      self.set_csr_by_type(PRCFG1, new_v)
+    }
+    PRCFG2(x) => {
+      let v = self.get_csr_by_type(PRCFG2)
+      let new_v = match x {
+        PSVAL => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(PRCFG2, new_v)
+    }
+    PRCFG3(x) => {
+      let v = self.get_csr_by_type(PRCFG3)
+      let new_v = match x {
+        TLBType => set_bit_seg(v, 0, 3, value)
+        MTLBEntries => set_bit_seg(v, 4, 11, value)
+        STLBWays => set_bit_seg(v, 12, 19, value)
+        STLBSets => set_bit_seg(v, 20, 25, value)
+      }
+      self.set_csr_by_type(PRCFG3, new_v)
+    }
+    SAVEn(i, x) => {
+      let v = self.get_csr_by_type(SAVEn(i))
+      let new_v = match x {
+        Data => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(SAVEn(i), new_v)
+    }
+    LLBCTL(x) => {
+      let v = self.get_csr_by_type(LLBCTL)
+      let new_v = match x {
+        ROLLB => set_bit_seg(v, 0, 0, value)
+        WCLLB => set_bit_seg(v, 1, 1, value)
+        KLO => set_bit_seg(v, 2, 2, value)
+      }
+      self.set_csr_by_type(LLBCTL, new_v)
+    }
+    IMPCTL1 => self.set_csr_by_type(IMPCTL1, value)
+    IMPCTL2 => self.set_csr_by_type(IMPCTL2, value)
+    CTAG => self.set_csr_by_type(CTAG, value)
+    TLBIDX(x) => {
+      let v = self.get_csr_by_type(TLBIDX)
+      let new_v = match x {
+        Index => set_bit_seg(v, 0, 15, value)
+        PS => set_bit_seg(v, 24, 29, value)
+        NE => set_bit_seg(v, 31, 31, value)
+      }
+      self.set_csr_by_type(TLBIDX, new_v)
+    }
+    TLBEHI(x) => {
+      let v = self.get_csr_by_type(TLBEHI)
+      let new_v = match x {
+        VPPN => set_bit_seg(v, 13, 63, value)
+        Sign_Ext => set_bit_seg(v, 63, 63, value)
+      }
+      self.set_csr_by_type(TLBEHI, new_v)
+    }
+    TLBELO0(x) => {
+      let v = self.get_csr_by_type(TLBELO0)
+      let new_v = match x {
+        V => set_bit_seg(v, 0, 0, value)
+        D => set_bit_seg(v, 1, 1, value)
+        PLV => set_bit_seg(v, 2, 3, value)
+        MAT => set_bit_seg(v, 4, 5, value)
+        G => set_bit_seg(v, 6, 6, value)
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+        NR => set_bit_seg(v, 61, 61, value)
+        NX => set_bit_seg(v, 62, 62, value)
+        RPLV => set_bit_seg(v, 63, 63, value)
+      }
+      self.set_csr_by_type(TLBELO0, new_v)
+    }
+    TLBELO1(x) => {
+      let v = self.get_csr_by_type(TLBELO0)
+      let new_v = match x {
+        V => set_bit_seg(v, 0, 0, value)
+        D => set_bit_seg(v, 1, 1, value)
+        PLV => set_bit_seg(v, 2, 3, value)
+        MAT => set_bit_seg(v, 4, 5, value)
+        G => set_bit_seg(v, 6, 6, value)
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+        NR => set_bit_seg(v, 61, 61, value)
+        NX => set_bit_seg(v, 62, 62, value)
+        RPLV => set_bit_seg(v, 63, 63, value)
+      }
+      self.set_csr_by_type(TLBELO0, new_v)
+    }
+    ASID(x) => {
+      let v = self.get_csr_by_type(ASID)
+      let new_v = match x {
+        ASID => set_bit_seg(v, 0, 9, value)
+        ASIDBITS => set_bit_seg(v, 16, 23, value)
+      }
+      self.set_csr_by_type(ASID, new_v)
+    }
+    PGDL(x) => {
+      let v = self.get_csr_by_type(PGDL)
+      let new_v = match x {
+        Base => set_bit_seg(v, 12, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(PGDL, new_v)
+    }
+    PGDH(x) => {
+      let v = self.get_csr_by_type(PGDH)
+      let new_v = match x {
+        Base => set_bit_seg(v, 12, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(PGDH, new_v)
+    }
+    PGD(x) => {
+      let v = self.get_csr_by_type(PGD)
+      let new_v = match x {
+        Base => set_bit_seg(v, 12, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(PGD, new_v)
+    }
+    PWCL(x) => {
+      let v = self.get_csr_by_type(PWCL)
+      let new_v = match x {
+        PTbase => set_bit_seg(v, 0, 4, value)
+        PTwidth => set_bit_seg(v, 5, 9, value)
+        Dir1_base => set_bit_seg(v, 10, 14, value)
+        Dir1_width => set_bit_seg(v, 15, 19, value)
+        Dir2_base => set_bit_seg(v, 20, 24, value)
+        Dir2_width => set_bit_seg(v, 25, 29, value)
+        PTEWidth => set_bit_seg(v, 30, 31, value)
+      }
+      self.set_csr_by_type(PWCL, new_v)
+    }
+    PWCH(x) => {
+      let v = self.get_csr_by_type(PWCH)
+      let new_v = match x {
+        Dir3_base => set_bit_seg(v, 0, 5, value)
+        Dir3_width => set_bit_seg(v, 6, 11, value)
+        Dir4_base => set_bit_seg(v, 12, 17, value)
+        Dir4_width => set_bit_seg(v, 18, 23, value)
+        HPTW_En => set_bit_seg(v, 24, 24, value)
+      }
+      self.set_csr_by_type(PWCH, new_v)
+    }
+    STLBPS(x) => {
+      let v = self.get_csr_by_type(STLBPS)
+      let new_v = match x {
+        PS => set_bit_seg(v, 0, 5, value)
+      }
+      self.set_csr_by_type(STLBPS, new_v)
+    }
+    TLBENTRY(x) => {
+      let v = self.get_csr_by_type(TLBENTRY)
+      let new_v = match x {
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+      }
+      self.set_csr_by_type(TLBENTRY, new_v)
+    }
+    TLBRBADV(x) => {
+      let v = self.get_csr_by_type(TLBRBADV)
+      let new_v = match x {
+        VAddr => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(TLBRBADV, new_v)
+    }
+    TLBRERA(x) => {
+      let v = self.get_csr_by_type(TLBRBADV)
+      let new_v = match x {
+        IsTLBR => set_bit_seg(v, 0, 0, value)
+        PC => set_bit_seg(v, 2, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(TLBRBADV, new_v)
+    }
+    TLBRSAVE(x) => {
+      let v = self.get_csr_by_type(TLBRSAVE)
+      let new_v = match x {
+        Data => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(TLBRSAVE, new_v)
+    }
+    TLBRELO0(x) => {
+      let v = self.get_csr_by_type(TLBRELO0)
+      let new_v = match x {
+        V => set_bit_seg(v, 0, 0, value)
+        D => set_bit_seg(v, 1, 1, value)
+        PLV => set_bit_seg(v, 2, 3, value)
+        MAT => set_bit_seg(v, 4, 5, value)
+        G => set_bit_seg(v, 6, 6, value)
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+        NR => set_bit_seg(v, 61, 61, value)
+        NX => set_bit_seg(v, 62, 62, value)
+        RPLV => set_bit_seg(v, 63, 63, value)
+      }
+      self.set_csr_by_type(TLBRELO0, new_v)
+    }
+    TLBRELO1(x) => {
+      let v = self.get_csr_by_type(TLBRELO1)
+      let new_v = match x {
+        V => set_bit_seg(v, 0, 0, value)
+        D => set_bit_seg(v, 1, 1, value)
+        PLV => set_bit_seg(v, 2, 3, value)
+        MAT => set_bit_seg(v, 4, 5, value)
+        G => set_bit_seg(v, 6, 6, value)
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+        NR => set_bit_seg(v, 61, 61, value)
+        NX => set_bit_seg(v, 62, 62, value)
+        RPLV => set_bit_seg(v, 63, 63, value)
+      }
+      self.set_csr_by_type(TLBRELO1, new_v)
+    }
+    TLBREHI(x) => {
+      let v = self.get_csr_by_type(TLBREHI)
+      let new_v = match x {
+        PS => set_bit_seg(v, 0, 5, value)
+        VPPN => set_bit_seg(v, 13, VALEN - 1, value)
+        Sign_Ext => set_bit_seg(v, VALEN, 63, value)
+      }
+      self.set_csr_by_type(TLBREHI, new_v)
+    }
+    TLBRPRMD(x) => {
+      let v = self.get_csr_by_type(TLBRPRMD)
+      let new_v = match x {
+        PPLV => set_bit_seg(v, 0, 1, value)
+        PIE => set_bit_seg(v, 2, 2, value)
+        PWE => set_bit_seg(v, 4, 4, value)
+      }
+      self.set_csr_by_type(TLBRPRMD, new_v)
+    }
+    DMWn(i, x) => {
+      let v = self.get_csr_by_type(DMWn(i))
+      let new_v = match x {
+        PLV0 => set_bit_seg(v, 0, 0, value)
+        PLV1 => set_bit_seg(v, 1, 1, value)
+        PLV2 => set_bit_seg(v, 2, 2, value)
+        PLV3 => set_bit_seg(v, 3, 3, value)
+        MAT => set_bit_seg(v, 4, 5, value)
+        VSEG => set_bit_seg(v, 60, 63, value)
+      }
+      self.set_csr_by_type(DMWn(i), new_v)
+    }
+    TID(x) => {
+      let v = self.get_csr_by_type(TID)
+      let new_v = match x {
+        TID => set_bit_seg(v, 0, 31, value)
+      }
+      self.set_csr_by_type(TID, new_v)
+    }
+    TCFG(x) => {
+      let v = self.get_csr_by_type(TCFG)
+      let new_v = match x {
+        En => set_bit_seg(v, 0, 0, value)
+        Periodic => set_bit_seg(v, 1, 1, value)
+        InitVal => set_bit_seg(v, GRLEN - 1, 2, value)
+      }
+      self.set_csr_by_type(TCFG, new_v)
+    }
+    TVAL(x) => {
+      let v = self.get_csr_by_type(TVAL)
+      let new_v = match x {
+        TimeVal => set_bit_seg(v, GRLEN - 1, 0, value)
+      }
+      self.set_csr_by_type(TVAL, new_v)
+    }
+    CNTC(x) => {
+      let v = self.get_csr_by_type(CNTC)
+      let new_v = match x {
+        Cimpensation => set_bit_seg(v, GRLEN - 1, 1, value)
+      }
+      self.set_csr_by_type(CNTC, new_v)
+    }
+    TICLR(x) => {
+      let v = self.get_csr_by_type(TICLR)
+      let new_v = match x {
+        CLR => set_bit_seg(v, 0, 1, value)
+      }
+      self.set_csr_by_type(TICLR, new_v)
+    }
+    MERRCTL(x) => {
+      let v = self.get_csr_by_type(MERRCTL)
+      let new_v = match x {
+        IsMERR => set_bit_seg(v, 0, 0, value)
+        Repairable => set_bit_seg(v, 1, 1, value)
+        PPLV => set_bit_seg(v, 2, 3, value)
+        PIE => set_bit_seg(v, 4, 4, value)
+        PWE => set_bit_seg(v, 6, 6, value)
+        PDA => set_bit_seg(v, 7, 7, value)
+        PPG => set_bit_seg(v, 8, 8, value)
+        PDATF => set_bit_seg(v, 9, 10, value)
+        PDATM => set_bit_seg(v, 11, 12, value)
+        Cause => set_bit_seg(v, 16, 23, value)
+      }
+      self.set_csr_by_type(MERRCTL, new_v)
+    }
+    MERRINFO1 => self.set_csr_by_type(MERRINFO1, value)
+    MERRINFO2 => self.set_csr_by_type(MERRINFO2, value)
+    MERRENTRY(x) => {
+      let v = self.get_csr_by_type(MERRENTRY)
+      let new_v = match x {
+        PPN => set_bit_seg(v, 12, PALEN - 1, value)
+      }
+      self.set_csr_by_type(MERRENTRY, new_v)
+    }
+    MERRERA(x) => {
+      let v = self.get_csr_by_type(MERRERA)
+      let new_v = match x {
+        PC => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(MERRERA, new_v)
+    }
+    MERRSAVE(x) => {
+      let v = self.get_csr_by_type(MERRSAVE)
+      let new_v = match x {
+        Data => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(MERRSAVE, new_v)
+    }
+    PMCFGn(i, x) => {
+      let v = self.get_csr_by_type(PMCFGn(i))
+      let new_v = match x {
+        EvCode => set_bit_seg(v, 0, 9, value)
+        PLV0 => set_bit_seg(v, 16, 16, value)
+        PLV1 => set_bit_seg(v, 17, 17, value)
+        PLV2 => set_bit_seg(v, 18, 18, value)
+        PLV3 => set_bit_seg(v, 19, 19, value)
+        PMIEn => set_bit_seg(v, 20, 20, value)
+      }
+      self.set_csr_by_type(PMCFGn(i), new_v)
+    }
+    PMCNTn(i, x) => {
+      let v = self.get_csr_by_type(PMCNTn(i))
+      let new_v = match x {
+        Count => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(PMCNTn(i), new_v)
+    }
+    MWPC(x) => {
+      let v = self.get_csr_by_type(MWPC)
+      let new_v = match x {
+        Num => set_bit_seg(v, 0, 5, value)
+      }
+      self.set_csr_by_type(MWPC, new_v)
+    }
+    MWPS(x) => {
+      let v = self.get_csr_by_type(MWPS)
+      let new_v = match x {
+        Status => set_bit_seg(v, 15, 1, value)
+        Skip => set_bit_seg(v, 16, 16, value)
+      }
+      self.set_csr_by_type(MWPS, new_v)
+    }
+    MWPnCFG1(i, x) => {
+      let v = self.get_csr_by_type(MWPnCFG1(i))
+      let new_v = match x {
+        VAddr => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(MWPnCFG1(i), new_v)
+    }
+    MWPnCFG2(i, x) => {
+      let v = self.get_csr_by_type(MWPnCFG2(i))
+      let new_v = match x {
+        Mask => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(MWPnCFG2(i), new_v)
+    }
+    MWPnCFG3(i, x) => {
+      let v = self.get_csr_by_type(MWPnCFG3(i))
+      let new_v = match x {
+        DSOnly => set_bit_seg(v, 0, 0, value)
+        PLV0 => set_bit_seg(v, 1, 1, value)
+        PLV1 => set_bit_seg(v, 2, 2, value)
+        PLV2 => set_bit_seg(v, 3, 3, value)
+        PLV3 => set_bit_seg(v, 4, 4, value)
+        LCL => set_bit_seg(v, 7, 7, value)
+        LoadEn => set_bit_seg(v, 8, 8, value)
+        StoreEn => set_bit_seg(v, 9, 9, value)
+        Size => set_bit_seg(v, 10, 11, value)
+      }
+      self.set_csr_by_type(MWPnCFG3(i), new_v)
+    }
+    MWPnCFG4(i, x) => {
+      let v = self.get_csr_by_type(MWPnCFG4(i))
+      let new_v = match x {
+        ASID => set_bit_seg(v, 0, 9, value)
+      }
+      self.set_csr_by_type(MWPnCFG4(i), new_v)
+    }
+    FWPC(x) => {
+      let v = self.get_csr_by_type(FWPC)
+      let new_v = match x {
+        Num => set_bit_seg(v, 0, 5, value)
+      }
+      self.set_csr_by_type(FWPC, new_v)
+    }
+    FWPS(x) => {
+      let v = self.get_csr_by_type(FWPS)
+      let new_v = match x {
+        Status => set_bit_seg(v, 1, 15, value)
+        Skip => set_bit_seg(v, 16, 16, value)
+      }
+      self.set_csr_by_type(FWPS, new_v)
+    }
+    FWPnCFG1(i, x) => {
+      let v = self.get_csr_by_type(FWPnCFG1(i))
+      let new_v = match x {
+        VAddr => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(FWPnCFG1(i), new_v)
+    }
+    FWPnCFG2(i, x) => {
+      let v = self.get_csr_by_type(FWPnCFG2(i))
+      let new_v = match x {
+        Mask => set_bit_seg(v, 0, GRLEN - 1, value)
+      }
+      self.set_csr_by_type(FWPnCFG2(i), new_v)
+    }
+    FWPnCFG3(i, x) => {
+      let v = self.get_csr_by_type(FWPnCFG3(i))
+      let new_v = match x {
+        DSOnly => set_bit_seg(v, 0, 0, value)
+        PLV0 => set_bit_seg(v, 1, 1, value)
+        PLV1 => set_bit_seg(v, 2, 2, value)
+        PLV2 => set_bit_seg(v, 3, 3, value)
+        PLV3 => set_bit_seg(v, 4, 4, value)
+        LCL => set_bit_seg(v, 7, 7, value)
+      }
+      self.set_csr_by_type(FWPnCFG3(i), new_v)
+    }
+    FWPnCFG4(i, x) => {
+      let v = self.get_csr_by_type(FWPnCFG4(i))
+      let new_v = match x {
+        ASID => set_bit_seg(v, 0, 9, value)
+      }
+      self.set_csr_by_type(FWPnCFG4(i), new_v)
+    }
+    DBG(x) => {
+      let v = self.get_csr_by_type(DBG)
+      let new_v = match x {
+        DS => set_bit_seg(v, 0, 0, value)
+        DRev => set_bit_seg(v, 1, 7, value)
+        DEI => set_bit_seg(v, 8, 8, value)
+        DCL => set_bit_seg(v, 9, 9, value)
+        DFW => set_bit_seg(v, 10, 10, value)
+        DMW => set_bit_seg(v, 11, 11, value)
+        Ecode => set_bit_seg(v, 16, 21, value)
+      }
+      self.set_csr_by_type(DBG, new_v)
+    }
+    DERA(x) => {
+      let v = self.get_csr_by_type(DERA)
+      let new_v = match x {
+        PC => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(DERA, new_v)
+    }
+    DSAVE(x) => {
+      let v = self.get_csr_by_type(DSAVE)
+      let new_v = match x {
+        Data => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(DSAVE, new_v)
+    }
+    MSGIS0(x) => {
+      let v = self.get_csr_by_type(MSGIS0)
+      let new_v = match x {
+        IS => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(MSGIS0, new_v)
+    }
+    MSGIS1(x) => {
+      let v = self.get_csr_by_type(MSGIS1)
+      let new_v = match x {
+        IS => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(MSGIS1, new_v)
+    }
+    MSGIS2(x) => {
+      let v = self.get_csr_by_type(MSGIS2)
+      let new_v = match x {
+        IS => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(MSGIS2, new_v)
+    }
+    MSGIS3(x) => {
+      let v = self.get_csr_by_type(MSGIS3)
+      let new_v = match x {
+        IS => set_bit_seg(v, 0, 63, value)
+      }
+      self.set_csr_by_type(MSGIS3, new_v)
+    }
+    MSGIR(x) => {
+      let v = self.get_csr_by_type(MSGIR)
+      let new_v = match x {
+        IntNum => set_bit_seg(v, 0, 7, value)
+        Null => set_bit_seg(v, 31, 31, value)
+      }
+      self.set_csr_by_type(MSGIR, new_v)
+    }
+    MSGIE(x) => {
+      let v = self.get_csr_by_type(MSGIE)
+      let new_v = match x {
+        PT => set_bit_seg(v, 0, 7, value)
+      }
+      self.set_csr_by_type(MSGIE, new_v)
     }
   }
 }

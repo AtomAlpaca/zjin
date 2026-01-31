@@ -6,6 +6,8 @@ struct CPU {
   mut stable_counter : UInt64
   mut counter_id : UInt
   cpu_cfg : FixedArray[UInt]
+  csr : CSR
+  mmu : MMU
 }
 
 ///|
@@ -149,6 +151,8 @@ pub fn CPU::make_CPU() -> CPU {
     stable_counter: 0,
     counter_id: 0,
     cpu_cfg: FixedArray::make(14, 0),
+    csr: CSR::make_CSR(),
+    mmu: MMU::make_mmu(),
   }
 }
 
